@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CommitteeRequest;
 use App\Models\Committee;
-use App\Models\Management;
 use App\Repositories\CommitteeRepository;
 use App\Repositories\ManagementRepository;
 use App\Repositories\MinistryRepository;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Http\Requests\CommitteeRequest;
 
 class CommitteeController extends Controller
 {
@@ -58,7 +56,7 @@ class CommitteeController extends Controller
     public function show(Committee $committee): View
     {
         $ministry = $committee->ministry;
-        $management = Management::where('committee_id', $committee->id)->first();
+        $management = $this->committeeRepository->getManagementReferencesById($committee->id);
 
         return view('committees.show', [
             'committee' => $committee,
@@ -72,7 +70,7 @@ class CommitteeController extends Controller
      */
     public function edit(Committee $committee): View
     {
-        $managements = Management::with('committee')->get();
+        $managements = $this->committeeRepository->getManagementReferences();
 
         return view('committees.edit', [
             'committee' => $committee,
@@ -83,36 +81,11 @@ class CommitteeController extends Controller
     /**
      * Обновление выбранного комитета.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(CommitteeRequest $request, string $id): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'committee_name' => 'required|max:255|string',
-            'management_id_assign' => 'required_without:management_id_unassign',
-            'management_id_unassign' => 'required_without:management_id_assign'
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $committee = Committee::findOrFail($id);
-        $committee->committee_name = $request->committee_name;
-        $committee->save();
-
-        $managementIdAssign = $request->management_id_assign;
-        $managementIdUnassign = $request->management_id_unassign;
-
-        $managementAssign = Management::find($managementIdAssign);
-        if ($managementAssign) {
-            $managementAssign->committee_id = $committee->id;
-            $managementAssign->save();
-        }
-
-        $managementUnassign = Management::find($managementIdUnassign);
-        if ($managementUnassign) {
-            $managementUnassign->committee_id = null;
-            $managementUnassign->save();
-        }
+        $this->committeeRepository->updateExistingCommittee($id, $validated['committee_name'], $validated['management_id_add'], $validated['management_id_remove']);
 
         return redirect('/organizations');
     }
@@ -124,6 +97,6 @@ class CommitteeController extends Controller
     {
         $committee->delete();
 
-        return redirect();
+        return redirect('/organizations');
     }
 }

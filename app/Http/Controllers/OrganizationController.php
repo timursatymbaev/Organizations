@@ -26,6 +26,11 @@ class OrganizationController extends Controller
         $this->managementRepository = $managementRepository;
     }
 
+    /**
+     * Отображение всех организаций.
+     *
+     * @return View
+     */
     public function index(): View
     {
         $ministries = $this->ministryRepository->getAllMinistries();
@@ -39,6 +44,12 @@ class OrganizationController extends Controller
         ]);
     }
 
+    /**
+     * Отображение страницы с найденными организациями.
+     *
+     * @param Request $request (параметр для поиска организаций)
+     * @return View
+     */
     public function search(Request $request): View
     {
         $search = trim($request->input('search'));

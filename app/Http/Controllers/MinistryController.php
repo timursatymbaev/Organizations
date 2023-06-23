@@ -72,10 +72,7 @@ class MinistryController extends Controller
     {
         $validated = $request->validated();
 
-        $committee_id_add = $validated['committee_id_add'] ? intval($validated['committee_id_add']) : null;
-        $committee_id_remove = $validated['committee_id_remove'] ? intval($validated['committee_id_remove']) : null;
-
-        $this->ministryRepository->updateExistingMinistry($id, $validated['ministry_name'], $committee_id_add, $committee_id_remove);
+        $this->ministryRepository->updateExistingMinistry($id, $validated['ministry_name'], $validated['committee_id_add'], $validated['committee_id_remove']);
 
         return redirect('/organizations');
     }
@@ -85,7 +82,7 @@ class MinistryController extends Controller
      */
     public function destroy(Ministry $ministry): RedirectResponse
     {
-        $this->ministryRepository->deleteMinistry($ministry);
+        $ministry->delete();
 
         return redirect('/organizations');
     }
