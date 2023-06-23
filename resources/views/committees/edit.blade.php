@@ -33,8 +33,8 @@
                             </div>
                         </div>
                         <div class="sm:col-span-2 mt-3">
-                            <label for="management_id_assign" class="block mb-4 text-md font-medium text-gray-900 dark:text-black">Выберите управление, которое вы хотите курировать</label>
-                            <select name="management_id_assign" id="management_id_assign" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                            <label for="management_id_add" class="block mb-4 text-md font-medium text-gray-900 dark:text-black">Выберите управление, которое вы хотите курировать</label>
+                            <select name="management_id_add" id="management_id_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option>Выберите управление, которое вы хотите курировать</option>
                                 @foreach($managements as $management)
                                     @if($management->committee_id === null)
@@ -44,8 +44,8 @@
                             </select>
                         </div>
                         <div class="sm:col-span-2 mt-3">
-                            <label for="management_id_unassign" class="block mb-4 text-md font-medium text-gray-900 dark:text-black">Выберите управление, которое вы хотите открепить</label>
-                            <select name="management_id_unassign" id="management_id_unassign" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                            <label for="management_id_remove" class="block mb-4 text-md font-medium text-gray-900 dark:text-black">Выберите управление, которое вы хотите открепить</label>
+                            <select name="management_id_remove" id="management_id_remove" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option>Выберите управление, которое вы хотите открепить</option>
                                 @foreach($managements as $management)
                                     @if($management->committee_id !== null)

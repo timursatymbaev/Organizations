@@ -2,61 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Committee;
-use App\Models\Ministry;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\ManagementRequest;
 use App\Models\Management;
+use App\Repositories\CommitteeRepository;
+use App\Repositories\ManagementRepository;
+use App\Repositories\MinistryRepository;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class ManagementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected MinistryRepository $ministryRepository;
+    protected CommitteeRepository $committeeRepository;
+    protected ManagementRepository $managementRepository;
+
+    public function __construct
+    (
+        MinistryRepository $ministryRepository,
+        CommitteeRepository $committeeRepository,
+        ManagementRepository $managementRepository
+    )
     {
-        //
+        $this->ministryRepository = $ministryRepository;
+        $this->committeeRepository = $committeeRepository;
+        $this->managementRepository = $managementRepository;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Отображение страницы для создания нового управления.
      */
     public function create(): View
     {
+        $ministries = $this->ministryRepository->getAllMinistries();
+        $committees = $this->committeeRepository->getAllCommittees();
+
         return view('managements.create', [
-            'ministries' => Ministry::all(),
-            'committees' => Committee::all(),
+            'ministries' => $ministries,
+            'committees' => $committees,
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Сохранение полученных данных в таблицу с управлениями.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(ManagementRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'management_name' => 'required|max:255|string',
-            'ministry_id' => 'required',
-            'committee_id' => 'required',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $management = new Management;
-        $management->management_name = $request->management_name;
-        $management->ministry_id = $request->ministry_id;
-        $management->committee_id = $request->committee_id;
-        $management->save();
+        $this->managementRepository->storeNewManagement($validated['management_name'], $validated['ministry_id'], $validated['committee_id']);
 
         return redirect('/organizations');
     }
 
     /**
-     * Display the specified resource.
+     * Отображение выбранного пользователем управления.
      */
     public function show(Management $management): View
     {
@@ -71,11 +70,11 @@ class ManagementController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Отображение страницы для редактирования выбранного управления.
      */
     public function edit(Management $management): View
     {
-        $committees = Committee::with('management')->get();
+        $committees = $this->committeeRepository->getManagementReferences();
 
         return view('managements.edit', [
             'management' => $management,
@@ -84,27 +83,19 @@ class ManagementController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Обновление выбранного управления.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(ManagementRequest $request, string $id): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'management_name' => 'required|string|max:255'
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $management = Management::findOrFail($id);
-        $management->management_name = $request->management_name;
-        $management->save();
+        $this->managementRepository->updateExistingManagement($id, $validated['management_name']);
 
         return redirect('/organizations');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Удаление выбранного пользователем управления.
      */
     public function destroy(Management $management): RedirectResponse
     {

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MinistryRequest extends FormRequest
+class ManagementRequest extends FormRequest
 {
     /**
      * Указывает, авторизован ли пользователь совершать какие-либо действия.
@@ -23,12 +23,12 @@ class MinistryRequest extends FormRequest
     {
         return match ($this->getMethod()) {
             'POST' => [
-                'ministry_name' => ['required', 'max:255', 'string'],
+                'management_name' => ['required', 'max:255', 'string'],
+                'ministry_id' => ['required'],
+                'committee_id' => ['required']
             ],
             'PUT' => [
-                'ministry_name' => ['required', 'max:255', 'string'],
-                'committee_id_add' => ['required_without:committee_id_remove'],
-                'committee_id_remove' => ['required_without:committee_id_add']
+                'management_name' => ['required', 'max:255', 'string']
             ],
             default => []
         };
@@ -42,9 +42,11 @@ class MinistryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'ministry_name.required' => 'Поле с названием министерства является обязательным.',
-            'ministry_name.max' => 'Максимальная длина названия министерства не должна превышать 255 символов.',
-            'ministry_name.string' => 'Название министерсва должно быть строкой.',
+            'management_name.required' => 'Название управления является обязательным.',
+            'management_name.max' => 'Название управления не должно превышать 255 символов.',
+            'management_name.string' => 'Название управления должно являться строкой.',
+            'ministry_id' => 'Идентификатор министерства является обязательным.',
+            'committee_id' => 'Идентификатор комитета является обязательным.'
         ];
     }
 }

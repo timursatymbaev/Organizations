@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class CommitteeRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Указывает, авторизован ли пользователь совершать какие-либо действия.
      */
     public function authorize(): bool
     {
@@ -15,18 +15,31 @@ class CommitteeRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Получает правила проверки, применимые к запросу.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return string[]
      */
     public function rules(): array
     {
-        return [
-            'committee_name' => 'required|max:255|string',
-            'ministry_id' => 'required'
-        ];
+        return match ($this->getMethod()) {
+            'POST' => [
+                'committee_name' => ['required', 'max:255', 'string'],
+                'ministry_id' => 'required'
+            ],
+            'PUT' => [
+                'committee_name' => ['required', 'max:255', 'string'],
+                'management_id_add' => ['required_without:management_id_remove'],
+                'management_id_remove' => ['required_without:management_id_add']
+            ],
+            default => []
+        };
     }
 
+    /**
+     * Получает сообщения для пользователя в случае неудачной валидации данных.
+     *
+     * @return string[]
+     */
     public function messages(): array
     {
         return [
