@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class MinistryRepository
 {
@@ -47,14 +48,17 @@ class MinistryRepository
     /**
      * Сохраняет созданное министерство в таблицу базы данных.
      *
-     * @param string $ministry_name (название нового министерства)
+     * @param string $ministryName (название нового министерства)
      * @return bool|Response
      */
-    public function storeNewMinistry(string $ministry_name): bool|Response
+    public function storeNewMinistry(string $ministryName): bool|Response
     {
         try {
+            $userId = Auth::id();
+
             $ministry = new Ministry;
-            $ministry->ministry_name = $ministry_name;
+            $ministry->ministry_name = $ministryName;
+            $ministry->user_id = $userId;
 
             return $ministry->save();
         } catch (\Exception $e) {
@@ -68,26 +72,36 @@ class MinistryRepository
      * Обновление существующего министерства.
      *
      * @param string $id (идентификатор министерства)
-     * @param string $ministry_name (название министерства)
-     * @param string|null $committee_id_add (идентификатор комитета для прикрепления к министерству)
-     * @param string|null $committee_id_remove (идентификатор комитета для открепления от министерства)
+     * @param string $ministryName (название министерства)
+     * @param string|null $committeeIdAdd (идентификатор комитета для прикрепления к министерству)
+     * @param string|null $committeeIdRemove (идентификатор комитета для открепления от министерства)
      * @return bool|Response
      */
-    public function updateExistingMinistry(string $id, string $ministry_name, ?string $committee_id_add = null, ?string $committee_id_remove = null): bool|Response
+    public function updateExistingMinistry(string $id, string $ministryName, ?string $committeeIdAdd = null, ?string $committeeIdRemove = null): bool|Response
     {
         try {
-            return DB::transaction(function () use ($id, $ministry_name, $committee_id_add, $committee_id_remove) {
+            $userId = Auth::id();
+
+            return DB::transaction(function () use ($id, $ministryName, $committeeIdAdd, $committeeIdRemove, $userId) {
+                $ministry = Ministry::where('id', $id)->where('user_id', $userId)->first();
+
+                if (!$ministry) {
+                    return new Response('Министерство не найдено или не принадлежит текущему пользователю.', 404);
+                }
+
                 $ministry = Ministry::find($id);
-                $ministry->ministry_name = $ministry_name;
+                $ministry->ministry_name = $ministryName;
                 $ministry->save();
 
                 if (!empty($committee_id_add)) {
-                    $this->addMinistryToCommittee($committee_id_add, $ministry->id);
+                    $this->addMinistryToCommittee($committeeIdAdd, $ministry->id);
                 }
 
                 if (!empty($committee_id_remove)) {
-                    $this->removeMinistryFromCommittee($committee_id_remove);
+                    $this->removeMinistryFromCommittee($committeeIdRemove);
                 }
+
+                return true;
             });
         } catch (\Exception $e) {
             Log::error('Ошибка при обновлении существующего министерства: ' . $e->getMessage());
@@ -99,18 +113,18 @@ class MinistryRepository
     /**
      * Добавление комитета к министерству. (вспомогательная функция)
      *
-     * @param string $committee_id (идентификатор комитета, который добавляется к министерству)
-     * @param string $ministry_id (идентификатор министерства, к которому добавляется комитет)
+     * @param string $committeeId (идентификатор комитета, который добавляется к министерству)
+     * @param string $ministryId (идентификатор министерства, к которому добавляется комитет)
      * @return bool|Response
      */
-    public function addMinistryToCommittee(string $committee_id, string $ministry_id): bool|Response
+    public function addMinistryToCommittee(string $committeeId, string $ministryId): bool|Response
     {
         try {
-            return DB::transaction(function () use ($committee_id, $ministry_id) {
-                $committee = Committee::find($committee_id);
+            return DB::transaction(function () use ($committeeId, $ministryId) {
+                $committee = Committee::find($committeeId);
 
                 if ($committee !== null) {
-                    $committee->ministry_id = $ministry_id;
+                    $committee->ministry_id = $ministryId;
                     $committee->save();
                 }
             });
@@ -124,14 +138,14 @@ class MinistryRepository
     /**
      * Открепление комитета от министерства. (вспомогательная функция)
      *
-     * @param string $committee_id (идентификатор комитета, который открепляется от министерства)
+     * @param string $committeeId (идентификатор комитета, который открепляется от министерства)
      * @return bool|Response
      */
-    public function removeMinistryFromCommittee(string $committee_id): bool|Response
+    public function removeMinistryFromCommittee(string $committeeId): bool|Response
     {
         try {
-            return DB::transaction(function () use ($committee_id) {
-                $committee = Committee::find($committee_id);
+            return DB::transaction(function () use ($committeeId) {
+                $committee = Committee::find($committeeId);
 
                 if ($committee !== null) {
                     $committee->ministry_id = null;

@@ -37,8 +37,10 @@
                             <select name="committee_id_add" id="committee_id_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option>Выберите комитет, который вы хотите курировать</option>
                                 @foreach($committees as $committee)
-                                    @if($committee->ministry_id === null)
-                                        <option value="{{ $committee->id }}">{{ $committee->committee_name }}</option>
+                                    @if(\Illuminate\Support\Facades\Auth::id() === $committee->user_id)
+                                        @if($committee->ministry_id === null)
+                                            <option value="{{ $committee->id }}">{{ $committee->committee_name }}</option>
+                                        @endif
                                     @endif
                                 @endforeach
                             </select>
@@ -48,8 +50,10 @@
                             <select name="committee_id_remove" id="committee_id_remove" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option>Выберите комитет, который вы хотите открепить</option>
                                 @foreach($committees as $committee)
-                                    @if($committee->ministry_id !== null)
-                                        <option value="{{ $committee->id }}">{{ $committee->committee_name }}</option>
+                                    @if(\Illuminate\Support\Facades\Auth::id() === $committee->user_id)
+                                        @if($committee->ministry_id !== null)
+                                            <option value="{{ $committee->id }}">{{ $committee->committee_name }}</option>
+                                        @endif
                                     @endif
                                 @endforeach
                             </select>

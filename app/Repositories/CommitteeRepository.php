@@ -6,6 +6,7 @@ use App\Models\Committee;
 use App\Models\Management;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -47,9 +48,9 @@ class CommitteeRepository
      * Получает отношения комитетов, которые курируют управления.
      *
      * @param string $committeeId (идентификатор комитета, который курирует управление)
-     * @return Management|Response
+     * @return Management|Response|null
      */
-    public function getManagementReferencesById(string $committeeId): Management|Response
+    public function getManagementReferencesById(string $committeeId): null|Management|Response
     {
         try {
             return Management::where('committee_id', $committeeId)->first();
@@ -96,19 +97,24 @@ class CommitteeRepository
     /**
      * Создание нового комитета.
      *
-     * @param string $committee_name (название комитета)
-     * @param string $ministry_id (идентификатор министерства для прикрепления)
-     * @return bool|Response
+     * @param string $committeeName (название комитета)
+     * @param string $ministryId (идентификатор министерства для прикрепления)
+     * @return null|Response
      */
-    public function storeNewCommittee(string $committee_name, string $ministry_id): bool|Response
+    public function storeNewCommittee(string $committeeName, string $ministryId): ?Response
     {
         try {
-            return DB::transaction(function () use ($committee_name, $ministry_id) {
+            $userId = Auth::id();
+
+            return DB::transaction(function () use ($committeeName, $ministryId, $userId) {
                 $committee = new Committee;
-                $committee->committee_name = $committee_name;
-                $committee->ministry_id = $ministry_id;
+                $committee->committee_name = $committeeName;
+                $committee->ministry_id = $ministryId;
+                $committee->user_id = $userId;
 
                 $committee->save();
+
+                return true;
             });
         } catch (\Exception $e) {
             Log::error('Ошибка при создании нового комитета: ' . $e->getMessage());
@@ -121,26 +127,36 @@ class CommitteeRepository
      * Обновление существующего комитета.
      *
      * @param string $id (идентификатор комитета)
-     * @param string $committee_name (название комитета)
-     * @param string|null $management_id_add (идентификатор управления, которое добавляется к комитету)
-     * @param string|null $management_id_remove (идентификатор управления, которое открепляется от комитета)
+     * @param string $committeeName (название комитета)
+     * @param string|null $managementIdAdd (идентификатор управления, которое добавляется к комитету)
+     * @param string|null $managementIdRemove (идентификатор управления, которое открепляется от комитета)
      * @return Response|bool
      */
-    public function updateExistingCommittee(string $id, string $committee_name, ?string $management_id_add = null, ?string $management_id_remove = null): bool|Response
+    public function updateExistingCommittee(string $id, string $committeeName, ?string $managementIdAdd = null, ?string $managementIdRemove = null): bool|Response
     {
         try {
-            return DB::transaction(function () use($id, $committee_name, $management_id_add, $management_id_remove) {
+            $userId = Auth::id();
+
+            return DB::transaction(function () use($id, $committeeName, $managementIdAdd, $managementIdRemove, $userId) {
+                $committee = Committee::where('id', $id)->where('user_id', $userId)->first();
+
+                if (!$committee) {
+                    return new Response('Комитет не существует или не принадлежит текущему пользователю.', 404);
+                }
+
                 $committee = Committee::find($id);
-                $committee->committee_name = $committee_name;
+                $committee->committee_name = $committeeName;
                 $committee->save();
 
-                if ($management_id_add !== null) {
-                    $this->addManagementToCommittee($management_id_add, $committee->id);
+                if ($managementIdAdd !== null) {
+                    $this->addManagementToCommittee($managementIdAdd, $committee->id);
                 }
 
-                if ($management_id_remove !== null) {
-                    $this->removeManagementFromCommittee($management_id_remove);
+                if ($managementIdRemove !== null) {
+                    $this->removeManagementFromCommittee($managementIdRemove);
                 }
+
+                return true;
             });
         } catch (\Exception $e) {
             Log::error('Ошибка при обновлении комитета: ' . $e->getMessage());
@@ -152,37 +168,41 @@ class CommitteeRepository
     /**
      * Прикрепление управления к комитету. (вспомогательная функция)
      *
-     * @param string $committee_id (идентификатор комитета, к которому будет прикреплено управление)
-     * @param string $management_id (идентификатор управления, которое будет прикреплено к комитету)
+     * @param string $committeeId (идентификатор комитета, к которому будет прикреплено управление)
+     * @param string $managementId (идентификатор управления, которое будет прикреплено к комитету)
      * @return bool
      */
-    public function addManagementToCommittee(string $management_id, string $committee_id): bool
+    public function addManagementToCommittee(string $managementId, string $committeeId): bool
     {
-        return DB::transaction(function () use ($management_id, $committee_id) {
-            $management = Management::find($management_id);
+        return DB::transaction(function () use ($managementId, $committeeId) {
+            $management = Management::find($managementId);
 
             if ($management !== null) {
-                $management->committee_id = $committee_id;
+                $management->committee_id = $committeeId;
                 $management->save();
             }
+
+            return true;
         });
     }
 
     /**
      * Открепление управления от комитета. (вспомогательная функция)
      *
-     * @param string $management_id (идентификатор управления, которое будет откреплено от комитета)
+     * @param string $managementId (идентификатор управления, которое будет откреплено от комитета)
      * @return bool
      */
-    public function removeManagementFromCommittee(string $management_id): bool
+    public function removeManagementFromCommittee(string $managementId): bool
     {
-        return DB::transaction(function () use($management_id) {
-            $management = Management::find($management_id);
+        return DB::transaction(function () use ($managementId) {
+            $management = Management::find($managementId);
 
             if ($management !== null) {
                 $management->committee_id = null;
                 $management->save();
             }
+
+            return true;
         });
     }
 }
