@@ -23,9 +23,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/organizations/search', 'search')->name('organizations.search');
     });
 
-    Route::resource('ministries', MinistryController::class)->except(['index']);
-    Route::resource('committees', CommitteeController::class)->except(['index']);
-    Route::resource('managements', ManagementController::class)->except(['index']);
+    Route::controller(MinistryController::class)->group(function () {
+        Route::get('/ministries/create', 'create')->name('ministries.create');
+        Route::post('/ministries', 'store')->name('ministries.store');
+        Route::put('/ministries/{ministry}', 'update')->name('ministries.update');
+        Route::delete('/ministries/{ministry}', 'destroy')->name('ministries.destroy');
+
+        Route::middleware(['check.ministry.access'])->group(function () {
+            Route::get('/ministries/{ministry}', 'show')->name('ministries.show');
+            Route::get('/ministries/{ministry}/edit', 'edit')->name('ministries.edit');
+        });
+    });
+
+    Route::controller(CommitteeController::class)->group(function () {
+        Route::get('/committees/create', 'create')->name('committees.create');
+        Route::post('/committees', 'store')->name('committees.store');
+        Route::put('/committees/{committee}', 'update')->name('committees.update');
+        Route::delete('/committees/{committee}', 'destroy')->name('committees.destroy');
+
+        Route::middleware(['check.committee.access'])->group(function () {
+            Route::get('/committees/{committee}', 'show')->name('committees.show');
+            Route::get('/committees/{committee}/edit', 'edit')->name('committees.edit');
+        });
+    });
+
+    Route::controller(ManagementController::class)->group(function () {
+        Route::get('/managements/create', 'create')->name('managements.create');
+        Route::post('/managements', 'store')->name('managements.store');
+        Route::put('/managements/{management}', 'update')->name('managements.update');
+        Route::delete('/managements/{management}', 'destroy')->name('managements.destroy');
+
+        Route::middleware(['check.management.access'])->group(function () {
+            Route::get('/managements/{management}', 'show')->name('managements.show');
+            Route::get('/managements/{management}/edit', 'edit')->name('managements.edit');
+        });
+    });
 });
 
 require __DIR__.'/auth.php';

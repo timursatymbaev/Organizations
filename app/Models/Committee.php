@@ -24,4 +24,9 @@ class Committee extends Model
     {
         return $this->belongsTo(Ministry::class);
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

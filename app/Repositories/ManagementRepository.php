@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Management;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ManagementRepository
@@ -45,19 +46,22 @@ class ManagementRepository
     /**
      * Сохранение нового управления.
      *
-     * @param string $management_name (название управления)
-     * @param string $ministry_id (идентификатор министерства, которое курирует управление)
-     * @param string $committee_id (идентификатор комитета, который курирует управление)
+     * @param string $managementName (название управления)
+     * @param string $ministryId (идентификатор министерства, которое курирует управление)
+     * @param string $committeeId (идентификатор комитета, который курирует управление)
      * @return bool|Response
      */
-    public function storeNewManagement(string $management_name, string $ministry_id, string $committee_id): bool|Response
+    public function storeNewManagement(string $managementName, string $ministryId, string $committeeId): bool|Response
     {
         try {
+            $userId = Auth::id();
+
             $management = new Management;
 
-            $management->management_name = $management_name;
-            $management->ministry_id = $ministry_id;
-            $management->committee_id = $committee_id;
+            $management->management_name = $managementName;
+            $management->ministry_id = $ministryId;
+            $management->committee_id = $committeeId;
+            $management->user_id = $userId;
 
             return $management->save();
         } catch (\Exception $e) {
@@ -70,15 +74,23 @@ class ManagementRepository
     /**
      * Обновление существующего управления.
      *
-     * @param string $management_id (идентификатор управления)
-     * @param string $management_name (новое название управления)
+     * @param string $managementId (идентификатор управления)
+     * @param string $managementName (новое название управления)
      * @return bool|Response
      */
-    public function updateExistingManagement(string $management_id, string $management_name): bool|Response
+    public function updateExistingManagement(string $managementId, string $managementName): bool|Response
     {
         try {
-            $management = Management::find($management_id);
-            $management->management_name = $management_name;
+            $userId = Auth::id();
+
+            $management = Management::where('id', $managementId)->where('user_id', $userId)->first();
+
+            if (!$management) {
+                return new Response('Управление не существует или не принадлежит текущему пользователю.', 404);
+            }
+
+            $management = Management::find($managementId);
+            $management->management_name = $managementName;
 
             return $management->save();
         } catch (\Exception $e) {

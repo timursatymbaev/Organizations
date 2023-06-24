@@ -63,22 +63,28 @@
                                     <td class="px-6 py-4">
                                         Отсутствует
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <x-primary-button>
-                                            <a href="{{ route('ministries.show', $ministry->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
-                                        </x-primary-button>
-                                        <x-primary-button class="mt-1">
-                                            <a href="{{ route('ministries.edit', $ministry->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
-                                        </x-primary-button>
-                                        <form class="mt-1" action="{{ route('ministries.destroy', $ministry->id) }}"
-                                              method="post">
-                                            @csrf
-                                            @method('delete')
-                                            <x-primary-button type="submit">Удалить</x-primary-button>
-                                        </form>
-                                    </td>
+                                    @if(\Illuminate\Support\Facades\Auth::id() === $ministry->user_id)
+                                        <td class="px-6 py-4">
+                                            <x-primary-button>
+                                                <a href="{{ route('ministries.show', $ministry->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
+                                            </x-primary-button>
+                                            <x-primary-button class="mt-1">
+                                                <a href="{{ route('ministries.edit', $ministry->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
+                                            </x-primary-button>
+                                            <form class="mt-1" action="{{ route('ministries.destroy', $ministry->id) }}"
+                                                  method="post">
+                                                @csrf
+                                                @method('delete')
+                                                <x-primary-button type="submit">Удалить</x-primary-button>
+                                            </form>
+                                        </td>
+                                    @else
+                                        <td class="px-6 py-4">
+                                            <h1>У вас нет доступа к данной организации.</h1>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                             @foreach($committees as $committee)
@@ -93,22 +99,28 @@
                                     <td class="px-6 py-4">
                                         {{ $committee->ministry->ministry_name ?? 'Отсутствует' }}
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <x-primary-button>
-                                            <a href="{{ route('committees.show', $committee->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
-                                        </x-primary-button>
-                                        <x-primary-button class="mt-1">
-                                            <a href="{{ route('committees.edit', $committee->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
-                                        </x-primary-button>
-                                        <form class="mt-1" action="{{ route('committees.destroy', $committee->id) }}"
-                                              method="post">
-                                            @csrf
-                                            @method('delete')
-                                            <x-primary-button type="submit">Удалить</x-primary-button>
-                                        </form>
-                                    </td>
+                                    @if(\Illuminate\Support\Facades\Auth::id() === $committee->user_id)
+                                        <td class="px-6 py-4">
+                                            <x-primary-button>
+                                                <a href="{{ route('committees.show', $committee->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
+                                            </x-primary-button>
+                                            <x-primary-button class="mt-1">
+                                                <a href="{{ route('committees.edit', $committee->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
+                                            </x-primary-button>
+                                            <form class="mt-1" action="{{ route('committees.destroy', $committee->id) }}"
+                                                  method="post">
+                                                @csrf
+                                                @method('delete')
+                                                <x-primary-button type="submit">Удалить</x-primary-button>
+                                            </form>
+                                        </td>
+                                    @else
+                                        <td class="px-6 py-4">
+                                            <h1>У вас нет доступа к данной организации.</h1>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                             @foreach($managements as $management)
@@ -123,22 +135,28 @@
                                     <td class="px-6 py-4">
                                         {{ $management->committee->committee_name ?? 'Отсутствует' }}
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <x-primary-button>
-                                            <a href="{{ route('managements.show', $management->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
-                                        </x-primary-button>
-                                        <x-primary-button class="mt-1">
-                                            <a href="{{ route('managements.edit', $management->id) }}"
-                                               class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
-                                        </x-primary-button>
-                                        <form class="mt-1" action="{{ route('managements.destroy', $management->id) }}"
-                                              method="post">
-                                            @csrf
-                                            @method('delete')
-                                            <x-primary-button type="submit">Удалить</x-primary-button>
-                                        </form>
-                                    </td>
+                                    @if(\Illuminate\Support\Facades\Auth::id() === $management->user_id)
+                                        <td class="px-6 py-4">
+                                            <x-primary-button>
+                                                <a href="{{ route('managements.show', $management->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Просмотреть</a>
+                                            </x-primary-button>
+                                            <x-primary-button class="mt-1">
+                                                <a href="{{ route('managements.edit', $management->id) }}"
+                                                   class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
+                                            </x-primary-button>
+                                            <form class="mt-1" action="{{ route('managements.destroy', $management->id) }}"
+                                                  method="post">
+                                                @csrf
+                                                @method('delete')
+                                                <x-primary-button type="submit">Удалить</x-primary-button>
+                                            </form>
+                                        </td>
+                                    @else
+                                        <td class="px-6 py-4">
+                                            <h1>У вас нет доступа к данной организации.</h1>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                             </tbody>

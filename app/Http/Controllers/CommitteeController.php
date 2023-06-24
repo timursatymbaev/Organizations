@@ -85,6 +85,8 @@ class CommitteeController extends Controller
     {
         $validated = $request->validated();
 
+        // dd($validated, $id);
+
         $this->committeeRepository->updateExistingCommittee($id, $validated['committee_name'], $validated['management_id_add'], $validated['management_id_remove']);
 
         return redirect('/organizations');
