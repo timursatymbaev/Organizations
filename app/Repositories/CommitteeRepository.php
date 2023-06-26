@@ -114,7 +114,7 @@ class CommitteeRepository
 
                 $committee->save();
 
-                return true;
+                return null;
             });
         } catch (\Exception $e) {
             Log::error('Ошибка при создании нового комитета: ' . $e->getMessage());
