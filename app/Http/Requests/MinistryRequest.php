@@ -23,12 +23,12 @@ class MinistryRequest extends FormRequest
     {
         return match ($this->getMethod()) {
             'POST' => [
-                'ministry_name' => ['required', 'max:255', 'string'],
+                'ministry_name' => ['required', 'max:255', 'string', 'unique:ministries,ministry_name'],
             ],
             'PUT' => [
                 'ministry_name' => ['required', 'max:255', 'string'],
                 'committee_id_add' => ['required_without:committee_id_remove'],
-                'committee_id_remove' => ['required_without:committee_id_add']
+                'committee_id_remove' => ['required_without:committee_id_add'],
             ],
             default => []
         };
@@ -45,6 +45,7 @@ class MinistryRequest extends FormRequest
             'ministry_name.required' => 'Поле с названием министерства является обязательным.',
             'ministry_name.max' => 'Максимальная длина названия министерства не должна превышать 255 символов.',
             'ministry_name.string' => 'Название министерсва должно быть строкой.',
+            'ministry_name.unique' => 'Министерство с таким названием уже существует.'
         ];
     }
 }
