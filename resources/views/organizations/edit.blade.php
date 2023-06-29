@@ -49,7 +49,7 @@
                                     <select name="followed_by_add" id="followed_by_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                         <option value="">Выберите министерство, к которому вы хотите прикрепиться</option>
                                         @foreach($organizations as $org)
-                                            @if($org->type === 'Министерство')
+                                            @if($org->type === 'Министерство' && $org->created_by === \Illuminate\Support\Facades\Auth::id())
                                                 <option value="{{ $org->id }}">{{ $org->name }}</option>
                                             @endif
                                         @endforeach
@@ -80,7 +80,7 @@
                                     <select name="followed_by" id="followed_by" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                         <option value="">Сначала выберите министерство, чтобы затем выбрать комитет для прикрепления</option>
                                         @foreach($organizations as $org)
-                                            @if($org->type === 'Министерство')
+                                            @if($org->type === 'Министерство' && $org->created_by === \Illuminate\Support\Facades\Auth::id())
                                                 <option value="{{ $org->id }}">{{ $org->name }}</option>
                                             @endif
                                         @endforeach
@@ -122,7 +122,7 @@
             followedByCommitteeSelectAdd.innerHTML = '<option value="">Выберите комитет, к которому вы хотите прикрепиться</option>';
 
             @foreach($organizations as $organization)
-                @if($organization->type === 'Комитет' && $organization->followedBy)
+                @if($organization->type === 'Комитет' && $organization->followedBy && $organization->created_by === \Illuminate\Support\Facades\Auth::id())
                     if ('{{ $organization->followedBy->id }}' === selectedFollowedBy) {
                         const option = document.createElement('option');
                         option.value = '{{ $organization->id }}';
