@@ -13,9 +13,9 @@
                     <h1 class="flex justify-center">Когда была создана организация: {{ $organization->created_at }}</h1>
                     <h1 class="flex justify-center">Когда была обновлена организация: {{ $organization->updated_at }}</h1>
                     @if($organization->type === 'Управление' && $organization->followedByCommittee)
-                        <h1 class="flex justify-center">Курируют организации: {{ $organization->followedByCommittee->name ?? 'отсутствуют' }}</h1>
+                        <h1 class="flex justify-center">Курируются организацией: {{ $organization->followedByCommittee->name ?? 'отсутствуют' }}</h1>
                     @else
-                        <h1 class="flex justify-center">Курируют организации: {{ $organization->followedBy->name ?? 'отсутствуют' }}</h1>
+                        <h1 class="flex justify-center">Курируются организацией: {{ $organization->followedBy->name ?? 'отсутствуют' }}</h1>
                     @endif
                 </div>
             </div>
