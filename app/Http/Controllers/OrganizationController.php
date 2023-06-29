@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OrganizationRequest;
 use App\Models\Organization;
 use App\Repositories\OrganizationRepository;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -14,6 +15,7 @@ class OrganizationController extends Controller
 
     public function __construct(OrganizationRepository $organizationRepository)
     {
+        $this->middleware('check.organization.access')->only(['edit', 'show']);
         $this->organizationRepository = $organizationRepository;
     }
 
@@ -23,6 +25,16 @@ class OrganizationController extends Controller
             'organizations' => $this->organizationRepository->getOrganizations(),
             'followedByOrganizations' => $this->organizationRepository->getFollowedByOrganizations()
         ]);
+    }
+
+    public function search(Request $request): View
+    {
+        $search = $request->input('search');
+        $filter = $request->input('filter');
+
+        $organizations = $this->organizationRepository->searchOrganization($search, $filter);
+
+        return view('organizations.search', ['organizations' => $organizations]);
     }
 
     public function create(): View
