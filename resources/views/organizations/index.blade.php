@@ -14,11 +14,20 @@
                         </x-primary-button>
                     </div>
                     <div class="w-full mt-4">
-                        <form action="" method="get">
+                        <form action="{{ route('organizations.search') }}" method="get">
                             <div class="flex justify-center">
                                 <input name="search" type="search" id="search"
-                                       class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       class="block w-full p-4 pl-10 text-lg text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                        placeholder="Найдите организацию по названию">
+                                <select name="filter" id="filter" class="ml-2 py-6 border border-gray-300 rounded-lg">
+                                    <option value="">Все</option>
+                                    <option value="Министерство">Министерства</option>
+                                    <option value="Комитет">Комитеты</option>
+                                    <option value="Управление">Управления</option>
+                                </select>
+                                <x-primary-button type="submit" class="ml-2 py-4">
+                                    <a href="{{ route('organizations.index') }}" class="p-2 bg-gray-300 text-white rounded-lg">Сбросить</a>
+                                </x-primary-button>
                                 <x-primary-button type="submit" class="ml-2 py-4">Найти</x-primary-button>
                             </div>
                         </form>
