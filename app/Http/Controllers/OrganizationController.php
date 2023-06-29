@@ -2,66 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\ManagementRepository;
-use App\Repositories\CommitteeRepository;
-use App\Repositories\MinistryRepository;
-use Illuminate\Http\Request;
+use App\Http\Requests\OrganizationRequest;
+use App\Models\Organization;
+use App\Repositories\OrganizationRepository;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class OrganizationController extends Controller
 {
-    protected MinistryRepository $ministryRepository;
-    protected CommitteeRepository $committeeRepository;
-    protected ManagementRepository $managementRepository;
+    protected OrganizationRepository $organizationRepository;
 
-    public function __construct
-    (
-        MinistryRepository $ministryRepository,
-        CommitteeRepository $committeeRepository,
-        ManagementRepository $managementRepository
-    )
+    public function __construct(OrganizationRepository $organizationRepository)
     {
-        $this->ministryRepository = $ministryRepository;
-        $this->committeeRepository = $committeeRepository;
-        $this->managementRepository = $managementRepository;
+        $this->organizationRepository = $organizationRepository;
     }
 
-    /**
-     * Отображение всех организаций.
-     *
-     * @return View
-     */
     public function index(): View
     {
-        $ministries = $this->ministryRepository->getAllMinistries();
-        $committees = $this->committeeRepository->getMinistryReferences();
-        $managements = $this->managementRepository->getCommitteeReferences();
-
         return view('organizations.index', [
-            'ministries' => $ministries,
-            'committees' => $committees,
-            'managements' => $managements,
+            'organizations' => $this->organizationRepository->getOrganizations(),
+            'followedByOrganizations' => $this->organizationRepository->getFollowedByOrganizations()
         ]);
     }
 
-    /**
-     * Отображение страницы с найденными организациями.
-     *
-     * @param Request $request (параметр для поиска организаций)
-     * @return View
-     */
-    public function search(Request $request): View
+    public function create(): View
     {
-        $search = trim($request->input('search'));
-
-        $ministries = $this->ministryRepository->searchMinistriesByName($search);
-        $committees = $this->committeeRepository->searchCommitteesByName($search);
-        $managements = $this->managementRepository->searchManagementsByName($search);
-
-        return view('organizations.search', [
-            'ministries' => $ministries,
-            'committees' => $committees,
-            'managements' => $managements
+        return view('organizations.create', [
+            'organizations' => Organization::all(),
         ]);
+    }
+
+    public function store(OrganizationRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $this->organizationRepository->createOrganization($validated);
+
+        return redirect('/organizations');
+    }
+
+    public function show(Organization $organization): View
+    {
+        return view('organizations.view', ['organization' => $organization]);
+    }
+
+    public function edit(Organization $organization): View
+    {
+        return view('organizations.edit', [
+            'organization' => $organization,
+            'organizations' => Organization::all()
+        ]);
+    }
+
+    public function update(OrganizationRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $this->organizationRepository->updateOrganization($validated);
+
+        return redirect('/organizations');
+    }
+
+    public function destroy(string $id): RedirectResponse
+    {
+        $this->organizationRepository->deleteOrganization($id);
+
+        return redirect('/organizations');
     }
 }
