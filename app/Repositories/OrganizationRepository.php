@@ -9,6 +9,26 @@ use Illuminate\Support\Facades\DB;
 
 class OrganizationRepository
 {
+    public function searchOrganization(?string $search, ?string $filter): Collection
+    {
+        $query = Organization::query();
+
+        if (!empty($search)) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        if (!empty($filter)) {
+            match ($filter) {
+                'Министерство' => $query->where('type', 'Министерство'),
+                'Комитет' => $query->where('type', 'Комитет'),
+                'Управление' => $query->where('type', 'Управление'),
+                default => Organization::all()
+            };
+        }
+
+        return $query->get();
+    }
+
     public function getOrganizations(): Collection
     {
         return Organization::all();
@@ -124,30 +144,7 @@ class OrganizationRepository
         $organization = Organization::findOrFail($id);
 
         match ($organization->type) {
-            'Министерство' => $this->deleteMinistry($id),
-            'Комитет' => $this->deleteCommittee($id),
-            'Управление' => $this->deleteManagement($id)
+            'Министерство', 'Управление', 'Комитет' => $organization->delete($id)
         };
-    }
-
-    private function deleteMinistry(string $id): void
-    {
-        $organization = Organization::findOrFail($id);
-
-        $organization->delete();
-    }
-
-    private function deleteCommittee(string $id): void
-    {
-        $organization = Organization::findOrFail($id);
-
-        $organization->delete();
-    }
-
-    private function deleteManagement(string $id): void
-    {
-        $organization = Organization::findOrFail($id);
-
-        $organization->delete();
     }
 }
