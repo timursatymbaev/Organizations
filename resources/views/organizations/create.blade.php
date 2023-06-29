@@ -58,7 +58,7 @@
                             <select name="followed_by" id="followed_by" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option value="">Выберите министерство, которое вас курирует</option>
                                 @foreach($organizations as $organization)
-                                    @if($organization->type === 'Министерство')
+                                    @if($organization->type === 'Министерство' && $organization->created_by === \Illuminate\Support\Facades\Auth::id())
                                         <option value="{{ $organization->id }}">{{ $organization->name }}</option>
                                     @endif
                                 @endforeach
@@ -83,27 +83,34 @@
     <script>
         const followedBySelect = document.getElementById('followed_by');
         const followedByCommitteeSelect = document.getElementById('followed_by_committee');
+        const organizationType = document.getElementById('type');
 
-        followedBySelect.addEventListener('change', function() {
-            const selectedFollowedBy = this.value;
+        organizationType.addEventListener('change', function () {
+            const selectedType = this.value;1
 
-            followedByCommitteeSelect.innerHTML = '<option value="">Выберите комитет, который вас курирует</option>';
+            if (selectedType === 'Управление') {
+                followedBySelect.addEventListener('change', function () {
+                    const selectedFollowedBy = this.value;
 
-            @foreach($organizations as $organization)
-                @if($organization->type === 'Комитет' && $organization->followedBy)
-                    if ('{{ $organization->followedBy->id }}' === selectedFollowedBy) {
-                        const option = document.createElement('option');
-                        option.value = '{{ $organization->id }}';
-                        option.innerText = '{{ $organization->name }}';
-                        followedByCommitteeSelect.appendChild(option);
+                    followedByCommitteeSelect.innerHTML = '<option value="">Выберите комитет, который вас курирует</option>';
+
+                    @foreach($organizations as $organization)
+                        @if($organization->type === 'Комитет' && $organization->followedBy && $organization->created_by === \Illuminate\Support\Facades\Auth::id())
+                            if ('{{ $organization->followedBy->id }}' === selectedFollowedBy) {
+                                const option = document.createElement('option');
+                                option.value = '{{ $organization->id }}';
+                                option.innerText = '{{ $organization->name }}';
+                                followedByCommitteeSelect.appendChild(option);
+                            }
+                        @endif
+                    @endforeach
+
+                    if (followedByCommitteeSelect.options.length > 1) {
+                        document.getElementById('managementFields').style.display = 'block';
+                    } else {
+                        document.getElementById('managementFields').style.display = 'none';
                     }
-                @endif
-            @endforeach
-
-            if (followedByCommitteeSelect.options.length > 1) {
-                document.getElementById('managementFields').style.display = 'block';
-            } else {
-                document.getElementById('managementFields').style.display = 'none';
+                });
             }
         });
     </script>
