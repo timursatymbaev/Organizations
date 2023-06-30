@@ -80,12 +80,16 @@
                                                 <a href="{{ route('organizations.edit', $organization->id) }}"
                                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Изменить</a>
                                             </x-primary-button>
-                                            <form class="mt-1"
-                                                  action="{{ route('organizations.destroy', $organization->id) }}"
-                                                  method="post">
+                                            <form class="mt-1 delete-form" action="{{ route('organizations.destroy', $organization->id) }}" method="post">
                                                 @csrf
                                                 @method('delete')
-                                                <x-primary-button type="submit">Удалить</x-primary-button>
+                                                <x-primary-button class="delete-button"
+                                                                  data-type="{{ $organization->type }}"
+                                                                  data-text="{{ $organization->type === 'Министерство' ? 'Если вы удалите министерство, то за ним удалятся все привязанные к нему организации.'
+                                                                  : ($organization->type === 'Комитет' ? 'Если вы удалите комитет, то за ним удалятся все привязанные к нему организации.'
+                                                                  : 'Вы уверены, что хотите удалить управление?') }}">
+                                                    Удалить
+                                                </x-primary-button>
                                             </form>
                                         </td>
                                     @else
@@ -102,4 +106,31 @@
             </div>
         </div>
     </div>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const deleteForms = document.getElementsByClassName('delete-form');
+        const deleteButtons = document.getElementsByClassName('delete-button');
+
+        for (let i = 0; i < deleteButtons.length; i++) {
+            deleteButtons[i].addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const confirmationText = deleteButtons[i].getAttribute('data-text');
+
+                Swal.fire({
+                    title: 'Вы уверены?',
+                    text: confirmationText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Удалить организацию',
+                    cancelButtonText: 'Отмена',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteForms[i].submit();
+                    }
+                });
+            });
+        }
+    </script>
 </x-app-layout>
